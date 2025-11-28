@@ -1,5 +1,5 @@
 [project]
-name = "cv-mirea-hack"
+name = "cv"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = []
 
 [project.scripts]
-cv-mirea-hack = "cv_mirea_hack:main"
+cv-mirea-hack = "cv:main"
 
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
