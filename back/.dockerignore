@@ -1,0 +1,9 @@
+# Exclude local development artifacts from the image build context
+.git
+__pycache__
+*.py[cod]
+*.pyo
+.venv
+.env
+.DS_Store
+.python-version
