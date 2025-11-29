@@ -1,16 +1,22 @@
 [project]
 name = "back"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI DDD-style backend service"
 readme = "README.md"
 authors = [
     { name = "FRIZFOREVER", email = "kirillhromov@mail.ru" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.112.0",
+    "uvicorn>=0.30.0",
+    "sqlalchemy>=2.0.31",
+    "alembic>=1.13.2",
+    "psycopg[binary]>=3.1.19",
+]
 
 [project.scripts]
-back = "back:main"
+back = "back.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.4,<0.10.0"]
