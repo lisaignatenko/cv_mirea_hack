@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -13,6 +14,18 @@ HTTP_TIMEOUT_SECONDS = 5.0
 RETRY_DELAY_SECONDS = 1.0
 MIGRATIONS_STATUS_FILENAME = "status.json"
 MIGRATIONS_LOCK_FILENAME = "migrations.lock"
+
+
+def _configure_logging() -> None:
+    app_logger = logging.getLogger("back")
+    if app_logger.handlers:
+        return
+
+    uvicorn_logger = logging.getLogger("uvicorn.error")
+    app_logger.setLevel(logging.INFO)
+    app_logger.propagate = False
+    for handler in uvicorn_logger.handlers:
+        app_logger.addHandler(handler)
 
 
 def _require_env(key: str) -> str:
@@ -157,6 +170,7 @@ from back.api.routes.segment_pipeline import router as segment_router  # noqa: E
 
 
 def app() -> FastAPI:
+    _configure_logging()
     fastapi_app = FastAPI(title="back service", lifespan=_lifespan)
 
     fastapi_app.include_router(health_router)
