@@ -4,5 +4,5 @@ router = APIRouter(tags=["health"])
 
 
 @router.get("/ping")
-async def ping():
+async def ping() -> dict[str, str]:
     return {"message": "pong"}
