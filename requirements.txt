@@ -1,0 +1,10 @@
+torch
+torchvision
+torchaudio
+ultralytics
+opencv-python
+numpy
+pillow
+paddleocr
+scikit-image
+tqdm
