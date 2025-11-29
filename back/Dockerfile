@@ -26,4 +26,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 USER nonroot
 
 CMD ["uvicorn", "back.api.app:app", "--factory", "--host", "0.0.0.0", \
-    "--port", "8000"]
+    "--port", "8001"]

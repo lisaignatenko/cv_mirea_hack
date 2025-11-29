@@ -17,7 +17,7 @@ services:
       FRONTEND_HEALTH_URL: http://cv:8000/ping
       CV_HEALTH_URL: http://cv:8000/ping
     ports:
-      - "8001:8000"
+      - "8001:8001"
     depends_on:
       db:
         condition: service_healthy
