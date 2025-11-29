@@ -13,6 +13,9 @@ These variables are required by the backend and migrations service:
   (mounted at `/var/run/migrations` by default).
 - `FRONTEND_HEALTH_URL`: URL the backend polls to confirm the frontend is healthy.
 - `CV_HEALTH_URL`: URL the backend polls to confirm the CV worker is healthy.
+- `CV_WORKFLOW_URL`: Endpoint that receives workflow payloads forwarded by the backend.
+- `CV_SEGMENT_URL`: CV worker endpoint used by the segment pipeline loop.
+- `FRONTEND_SEGMENT_URL`: Endpoint that receives processed segment payloads from the backend.
 
 Create the virtual environment with `uv sync --frozen`; the resulting `.venv` directory is
 ignored by Git so CI runners can recreate it without tripping over checked-in placeholders.
