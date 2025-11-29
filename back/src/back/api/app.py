@@ -1,7 +1,9 @@
 import asyncio
+import json
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import httpx
 import psycopg
@@ -14,6 +16,8 @@ from back.api.routes.resources import router as resources_router
 
 HTTP_TIMEOUT_SECONDS = 5.0
 RETRY_DELAY_SECONDS = 1.0
+MIGRATIONS_STATUS_FILENAME = "status.json"
+MIGRATIONS_LOCK_FILENAME = "migrations.lock"
 
 
 def _require_env(key: str) -> str:
@@ -34,6 +38,52 @@ async def _wait_for_http_health(client: httpx.AsyncClient, url: str) -> None:
         except Exception as exc:  # noqa: BLE001
             print(f"Healthcheck for {url} failed: {exc}")
             await asyncio.sleep(RETRY_DELAY_SECONDS)
+
+
+def _read_migration_state(state_dir: Path) -> dict[str, str] | None:
+    status_path = state_dir / MIGRATIONS_STATUS_FILENAME
+    if not status_path.exists():
+        return None
+
+    content = status_path.read_text(encoding="utf-8")
+    payload = json.loads(content)
+    status = payload.get("status")
+    detail = payload.get("detail")
+
+    if not isinstance(status, str):
+        raise TypeError("Migration status must be a string")
+    if not isinstance(detail, str):
+        raise TypeError("Migration detail must be a string")
+
+    return {"status": status, "detail": detail}
+
+
+async def _wait_for_migrations(state_dir: Path) -> None:
+    while True:
+        if not state_dir.exists():
+            print("Waiting for migrations state directory to appear")
+            await asyncio.sleep(RETRY_DELAY_SECONDS)
+            continue
+        if not state_dir.is_dir():
+            raise RuntimeError("MIGRATIONS_STATE_DIR must be a directory")
+
+        lock_path = state_dir / MIGRATIONS_LOCK_FILENAME
+        lock_exists = lock_path.exists()
+        migration_state = _read_migration_state(state_dir)
+
+        if migration_state is None:
+            await asyncio.sleep(RETRY_DELAY_SECONDS)
+            continue
+
+        status = migration_state["status"]
+        detail = migration_state["detail"]
+
+        if status == "failed":
+            raise RuntimeError(f"Migrations failed: {detail}")
+        if status == "completed" and not lock_exists:
+            return
+
+        await asyncio.sleep(RETRY_DELAY_SECONDS)
 
 
 async def _assert_migrations_ready(database_url: str) -> None:
@@ -89,6 +139,10 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
     frontend_url = _require_env("FRONTEND_HEALTH_URL")
     cv_url = _require_env("CV_HEALTH_URL")
     database_url = _require_env("DATABASE_URL")
+    migrations_state_dir_env = _require_env("MIGRATIONS_STATE_DIR")
+    migrations_state_dir = Path(migrations_state_dir_env)
+
+    await _wait_for_migrations(migrations_state_dir)
 
     async with httpx.AsyncClient() as client:
         await asyncio.gather(

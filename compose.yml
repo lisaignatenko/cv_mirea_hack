@@ -6,18 +6,27 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+
   back:
     build:
       context: ./back
       dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      MIGRATIONS_STATE_DIR: /var/run/migrations
+      FRONTEND_HEALTH_URL: http://cv:8000/health
+      CV_HEALTH_URL: http://cv:8000/health
     ports:
       - "8001:8000"
     depends_on:
       db:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    volumes:
+      - migrations_state:/var/run/migrations
     restart: unless-stopped
+
   db:
     image: postgres:16-alpine
     environment:
@@ -32,6 +41,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: unless-stopped
+
   migrations:
     build:
       context: ./back
@@ -39,10 +49,14 @@ services:
     command: ["python", "-m", "back.data.migrations"]
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      MIGRATIONS_STATE_DIR: /var/run/migrations
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - migrations_state:/var/run/migrations
     restart: "no"
 
 volumes:
   db_data:
+  migrations_state:
