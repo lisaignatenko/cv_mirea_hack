@@ -71,9 +71,11 @@ class SegmentPipelineService:
         payload = SegmentPayload.model_validate(response_json)
         await self._repository.record_segment(payload)
 
-        frontend_response = await self._client.post(
-            self._frontend_segment_url, json=payload.model_dump(mode="json")
-        )
+        await self.forward_to_frontend(payload)
+
+    async def forward_to_frontend(self, payload: SegmentPayload) -> None:
+        payload_dict = payload.model_dump(mode="json")
+        frontend_response = await self._client.post(self._frontend_segment_url, json=payload_dict)
         frontend_response.raise_for_status()
 
     async def aclose(self) -> None:
