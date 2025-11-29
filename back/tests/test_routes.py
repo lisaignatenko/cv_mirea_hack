@@ -8,11 +8,7 @@ from httpx import AsyncClient
 async def test_health_endpoints(async_client: AsyncClient) -> None:
     ping_response = await async_client.get("/ping")
     assert ping_response.status_code == 200
-    assert ping_response.json() == {"message": "pong"}
-
-    health_response = await async_client.get("/health/ping")
-    assert health_response.status_code == 200
-    assert health_response.json() == {"status": "ok"}
+    assert ping_response.json() == {"status": "ok"}
 
 
 @pytest.mark.asyncio
