@@ -7,7 +7,10 @@ import httpx
 import psycopg
 from fastapi import FastAPI
 
+from back.api.routes.cv_workflow import router as cv_router
+from back.api.routes.frontend import router as frontend_router
 from back.api.routes.health import router as health_router
+from back.api.routes.resources import router as resources_router
 
 HTTP_TIMEOUT_SECONDS = 5.0
 RETRY_DELAY_SECONDS = 1.0
@@ -101,5 +104,8 @@ def app() -> FastAPI:
     fastapi_app = FastAPI(title="back service", lifespan=_lifespan)
 
     fastapi_app.include_router(health_router)
+    fastapi_app.include_router(frontend_router)
+    fastapi_app.include_router(cv_router)
+    fastapi_app.include_router(resources_router)
 
     return fastapi_app
