@@ -12,6 +12,7 @@ def run_video(
     frame_stride: int = 3,
     show: bool = False,
     device: str = "cuda",
+    save_crops_dir: Optional[str] = None,
 ):
     print(f"Opening video: {input_path}")
     cap = cv2.VideoCapture(input_path)
@@ -23,6 +24,9 @@ def run_video(
     detections: List[Detection] = []
     writer = None
     output_path_obj = Path(output_path) if output_path is not None else None
+    crops_dir = Path(save_crops_dir) if save_crops_dir is not None else None
+    if crops_dir is not None:
+        crops_dir.mkdir(parents=True, exist_ok=True)
 
     while True:
         ret, frame = cap.read()
@@ -46,11 +50,14 @@ def run_video(
             if not writer.isOpened():
                 raise RuntimeError("Failed to open VideoWriter")
 
-        if frame_idx % frame_stride == 0:
+        should_run_detection = frame_idx % frame_stride == 0
+        if should_run_detection:
             print(f"Processing frame {frame_idx}")
             detections = detector.detect(frame)
 
-        for det in detections:
+        raw_frame = frame.copy()
+
+        for det_idx, det in enumerate(detections):
             x1, y1, x2, y2 = det.bbox
             color = (0, 255, 0) if det.label == "person" else (255, 0, 0)
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
@@ -64,6 +71,22 @@ def run_video(
                 color,
                 1,
             )
+
+            if (
+                crops_dir is not None
+                and should_run_detection
+                and det.label == "person"
+            ):
+                crop_x1 = max(0, x1)
+                crop_y1 = max(0, y1)
+                crop_x2 = min(frame.shape[1], x2)
+                crop_y2 = min(frame.shape[0], y2)
+                if crop_x2 > crop_x1 and crop_y2 > crop_y1:
+                    crop = raw_frame[crop_y1:crop_y2, crop_x1:crop_x2]
+                    crop_name = (
+                        f"frame{frame_idx:06d}_det{det_idx:03d}_{det.label}.jpg"
+                    )
+                    cv2.imwrite(str(crops_dir / crop_name), crop)
 
         if writer is not None:
             writer.write(frame)
@@ -106,6 +129,11 @@ def main():
         action="store_true",
         help="Show window with video",
     )
+    parser.add_argument(
+        "--save-crops",
+        type=str,
+        help="Directory to save cropped person images for dataset creation",
+    )
     args = parser.parse_args()
 
     run_video(
@@ -114,6 +142,7 @@ def main():
         frame_stride=args.frame_stride,
         show=args.show,
         device=args.device,
+        save_crops_dir=args.save_crops,
     )
 
 
