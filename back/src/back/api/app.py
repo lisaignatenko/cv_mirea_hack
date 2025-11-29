@@ -9,11 +9,6 @@ import httpx
 import psycopg
 from fastapi import FastAPI
 
-from back.api.routes.cv_workflow import router as cv_router
-from back.api.routes.frontend import router as frontend_router
-from back.api.routes.health import router as health_router
-from back.api.routes.resources import router as resources_router
-
 HTTP_TIMEOUT_SECONDS = 5.0
 RETRY_DELAY_SECONDS = 1.0
 MIGRATIONS_STATUS_FILENAME = "status.json"
@@ -152,6 +147,12 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
         )
 
     yield
+
+
+from back.api.routes.cv_workflow import router as cv_router  # noqa: E402
+from back.api.routes.frontend import router as frontend_router  # noqa: E402
+from back.api.routes.health import router as health_router  # noqa: E402
+from back.api.routes.resources import router as resources_router  # noqa: E402
 
 
 def app() -> FastAPI:
