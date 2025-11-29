@@ -56,7 +56,7 @@ def _apply_base_schema(database_url: str) -> None:
             cursor.execute(
                 "CREATE TABLE cv_frames ("  # noqa: S608
                 "id BIGSERIAL PRIMARY KEY,"
-                "ts TIMESTAMPTZ NOT NULL,"
+                "ts TIMESTAMPTZ DEFAULT now(),"
                 "tick INTEGER NOT NULL,"
                 "camera TEXT NULL,"  # noqa: S105
                 "CONSTRAINT uq_cv_frames_tick UNIQUE (tick)"
@@ -156,9 +156,7 @@ def _apply_base_schema(database_url: str) -> None:
                     (INITIAL_VERSION,),
                 )
             else:
-                cursor.execute(
-                    "UPDATE alembic_version SET version_num = %s;", (INITIAL_VERSION,)
-                )
+                cursor.execute("UPDATE alembic_version SET version_num = %s;", (INITIAL_VERSION,))
             connection.commit()
 
 

@@ -69,7 +69,7 @@ class EventPayload(BaseModel):
 class SegmentPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    timestamp: datetime
+    timestamp: datetime | None = None
     camera: str | None = None
     tick: int
     train: TrainDetectionPayload | None = None

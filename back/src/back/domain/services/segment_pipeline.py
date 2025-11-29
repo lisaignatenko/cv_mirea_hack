@@ -6,7 +6,6 @@ import httpx
 from back.data.repositories import SegmentRepository
 from back.domain.models import SegmentPayload
 
-
 logger = logging.getLogger("back.segment_pipeline")
 
 
@@ -66,7 +65,11 @@ class SegmentPipelineService:
             await asyncio.sleep(self._poll_interval_seconds)
 
     async def _process_tick(self) -> None:
-        response = await self._client.post(self._segment_url, json={"id": self._next_id})
+        # Capture the tick id so logging and payloads stay consistent
+        tick_id = self._next_id
+
+        logger.info("calling cv with %s", tick_id)
+        response = await self._client.post(self._segment_url, json={"id": tick_id})
         response.raise_for_status()
         response_json = response.json()
         if not isinstance(response_json, dict):
@@ -75,22 +78,46 @@ class SegmentPipelineService:
         payload = SegmentPayload.model_validate(response_json)
         logger.info(
             "Received CV segment response for id %d:\n%s",
-            self._next_id,
+            tick_id,
             payload.model_dump_json(indent=2),
         )
         await self._repository.record_segment(payload)
 
-        await self.forward_to_frontend(payload)
+        # Fire-and-forget forwarding to frontend:
+        # schedule, don't await the network call
+        await self.forward_to_frontend(payload, tick_id=tick_id)
 
-    async def forward_to_frontend(self, payload: SegmentPayload) -> None:
+    async def forward_to_frontend(self, payload: SegmentPayload, *, tick_id: int) -> None:
         payload_dict = payload.model_dump(mode="json")
         logger.info(
             "Forwarding segment payload to frontend for id %d:\n%s",
-            self._next_id,
+            tick_id,
             payload.model_dump_json(indent=2),
         )
-        frontend_response = await self._client.post(self._frontend_segment_url, json=payload_dict)
-        frontend_response.raise_for_status()
+
+        async def _send() -> None:
+            try:
+                frontend_response = await self._client.post(
+                    self._frontend_segment_url,
+                    json=payload_dict,
+                    timeout=2.0,  # keep it short so it never stalls the pipeline
+                )
+                if frontend_response.is_error:
+                    logger.warning(
+                        "Frontend responded with status %s while forwarding segment id %d",
+                        frontend_response.status_code,
+                        tick_id,
+                    )
+            except Exception:
+                # Make sure failures here never kill the pipeline
+                logger.exception(
+                    "Error while forwarding segment id %d to frontend",
+                    tick_id,
+                )
+
+        # Run the actual HTTP call in the background.
+        # This makes forward_to_frontend effectively non-blocking.
+        asyncio.create_task(_send())
 
     async def aclose(self) -> None:
         await self._client.aclose()
