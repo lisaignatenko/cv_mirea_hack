@@ -15,10 +15,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
       MIGRATIONS_STATE_DIR: /var/run/migrations
       FRONTEND_HEALTH_URL: http://cv:8000/ping
+      FRONTEND_SEGMENT_URL: http://cv:8000/segment
       CV_HEALTH_URL: http://cv:8000/ping
       CV_WORKFLOW_URL: http://cv:8000/do_something
       CV_SEGMENT_URL: http://cv:8000/segment
-      FRONTEND_SEGMENT_URL: http://cv:8000/segment
     ports:
       - "8001:8001"
     depends_on:
