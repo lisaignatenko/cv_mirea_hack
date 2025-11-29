@@ -7,7 +7,7 @@ from back.data.repositories import SegmentRepository
 from back.domain.models import SegmentPayload
 
 
-logger = logging.getLogger("back.segment_pipeline")
+logger = logging.getLogger(__name__)
 
 
 class SegmentPipelineService:
