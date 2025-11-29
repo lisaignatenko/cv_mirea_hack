@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 from uuid import UUID
 
@@ -9,6 +10,7 @@ from back.domain.models import SegmentPayload, Session, Task
 from back.domain.services import FrontendInteractionService, SegmentPipelineService
 
 router = APIRouter(prefix="/frontend", tags=["frontend"])
+logger = logging.getLogger(__name__)
 
 
 class SessionStartRequest(BaseModel):
@@ -76,4 +78,5 @@ async def forward_segment_payload(
     payload: SegmentPayload,
     service: SegmentPipelineService = Depends(get_segment_pipeline_service),
 ) -> None:
+    logger.info("Received segment payload:\n%s", payload.model_dump_json(indent=2))
     await service.forward_to_frontend(payload)
