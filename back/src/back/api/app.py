@@ -1,6 +1,8 @@
 import asyncio
+import copy
 import json
 import logging
+import logging.config
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -21,11 +23,15 @@ def _configure_logging() -> None:
     if app_logger.handlers:
         return
 
-    uvicorn_logger = logging.getLogger("uvicorn.error")
-    app_logger.setLevel(logging.INFO)
-    app_logger.propagate = False
-    for handler in uvicorn_logger.handlers:
-        app_logger.addHandler(handler)
+    from uvicorn.config import LOGGING_CONFIG
+
+    logging_config = copy.deepcopy(LOGGING_CONFIG)
+    logging_config["loggers"]["back"] = {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": False,
+    }
+    logging.config.dictConfig(logging_config)
 
 
 def _require_env(key: str) -> str:
