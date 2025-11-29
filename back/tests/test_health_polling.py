@@ -21,7 +21,7 @@ async def test_wait_for_http_health_recovers(no_sleep: None) -> None:
 
     transport = httpx.MockTransport(handler)
     async with httpx.AsyncClient(transport=transport) as client:
-        await api_app._wait_for_http_health(client, "http://service.local/health")
+        await api_app._wait_for_http_health(client, "http://service.local/ping")
 
     assert attempts == 2
 

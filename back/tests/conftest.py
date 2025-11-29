@@ -23,7 +23,7 @@ def test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> FastAPI:
     state_dir.mkdir()
 
     monkeypatch.setenv("FRONTEND_HEALTH_URL", "http://frontend/health")
-    monkeypatch.setenv("CV_HEALTH_URL", "http://cv/health")
+    monkeypatch.setenv("CV_HEALTH_URL", "http://cv/ping")
     monkeypatch.setenv("DATABASE_URL", "postgresql://user:pass@localhost:5432/test")
     monkeypatch.setenv("MIGRATIONS_STATE_DIR", str(state_dir))
 
