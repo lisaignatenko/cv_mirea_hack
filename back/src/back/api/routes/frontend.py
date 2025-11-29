@@ -4,9 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from back.api.dependencies import get_frontend_service
-from back.domain.models import Session, Task
-from back.domain.services import FrontendInteractionService
+from back.api.dependencies import get_frontend_service, get_segment_pipeline_service
+from back.domain.models import SegmentPayload, Session, Task
+from back.domain.services import FrontendInteractionService, SegmentPipelineService
 
 router = APIRouter(prefix="/frontend", tags=["frontend"])
 
@@ -69,3 +69,11 @@ async def start_task(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return TaskResponse.from_domain(task)
+
+
+@router.post("/segment", status_code=status.HTTP_204_NO_CONTENT)
+async def forward_segment_payload(
+    payload: SegmentPayload,
+    service: SegmentPipelineService = Depends(get_segment_pipeline_service),
+) -> None:
+    await service.forward_to_frontend(payload)
