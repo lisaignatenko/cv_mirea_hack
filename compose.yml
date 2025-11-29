@@ -14,7 +14,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
       MIGRATIONS_STATE_DIR: /var/run/migrations
-      FRONTEND_HEALTH_URL: http://cv:8000/health
+      FRONTEND_HEALTH_URL: http://cv:8000/ping
       CV_HEALTH_URL: http://cv:8000/ping
     ports:
       - "8001:8000"
