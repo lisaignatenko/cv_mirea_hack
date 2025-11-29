@@ -153,6 +153,7 @@ from back.api.routes.cv_workflow import router as cv_router  # noqa: E402
 from back.api.routes.frontend import router as frontend_router  # noqa: E402
 from back.api.routes.health import router as health_router  # noqa: E402
 from back.api.routes.resources import router as resources_router  # noqa: E402
+from back.api.routes.segment_pipeline import router as segment_router  # noqa: E402
 
 
 def app() -> FastAPI:
@@ -162,5 +163,6 @@ def app() -> FastAPI:
     fastapi_app.include_router(frontend_router)
     fastapi_app.include_router(cv_router)
     fastapi_app.include_router(resources_router)
+    fastapi_app.include_router(segment_router)
 
     return fastapi_app
