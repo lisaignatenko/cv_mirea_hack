@@ -10,7 +10,7 @@ from back.domain.models import SegmentPayload, Session, Task
 from back.domain.services import FrontendInteractionService, SegmentPipelineService
 
 router = APIRouter(prefix="/frontend", tags=["frontend"])
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("back.frontend")
 
 
 class SessionStartRequest(BaseModel):
