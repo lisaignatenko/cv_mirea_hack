@@ -1,6 +1,6 @@
-from typing import Any, Dict, Optional
 import json
 import os
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException
 
@@ -11,15 +11,13 @@ current_dir = os.path.dirname(__file__)
 
 # Cringe
 # (routes -> api -> cv -> src -> cv -> cv_mirea_hack) = 5 levels up
-JSONL_FILE_PATH = os.path.abspath(
-    os.path.join(current_dir, '../../../../../frames.jsonl')
-)
+JSONL_FILE_PATH = os.path.abspath(os.path.join(current_dir, "frames.jsonl"))
 
 router = APIRouter(tags=["segment"])
 
 
 def get_jsonl_line(file_path: str, line_index: int) -> Optional[Dict[str, Any]]:
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         for current_line, line in enumerate(file):
             if current_line == line_index:
                 return json.loads(line.strip())
