@@ -1,102 +1,108 @@
-from pathlib import Path
-from typing import Optional, List, Union
-import cv2
-import numpy as np
 import json
-from datetime import datetime, timezone
-from PIL import Image
 import re
-from cv_mirea_hack.detection.detector import FactoryDetector, Detection
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import List, Optional
+
+import cv2
 import easyocr
+import numpy as np
+
+from cv.detection.detector import Detection, FactoryDetector
 
 TIMESTAMP_ROI = (1, 1, 615, 38)
 
 _reader = None
 
+
 def get_reader():
     global _reader
     if _reader is None:
         print("Инициализация EasyOCR...")
-        _reader = easyocr.Reader(['en'])  # Только английский для цифр
+        _reader = easyocr.Reader(["en"])  # Только английский для цифр
     return _reader
+
 
 def extract_timestamp_from_frame(frame) -> Optional[datetime]:  # ИСПРАВЛЕНО: | -> Optional
     x1, y1, x2, y2 = TIMESTAMP_ROI
     roi = frame[y1:y2, x1:x2]
     cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
-    
+
     # Получаем ридер
     reader = get_reader()
-    
+
     # ПРОСТАЯ предобработка для EasyOCR
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    
+
     # Увеличиваем контраст
     gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
-    
+
     # Используем EasyOCR
-    results = reader.readtext(gray, 
-                            allowlist='0123456789-: ',  # Разрешаем только нужные символы
-                            paragraph=False, 
-                            detail=1)
-    
+    results = reader.readtext(
+        gray,
+        allowlist="0123456789-: ",  # Разрешаем только нужные символы
+        paragraph=False,
+        detail=1,
+    )
+
     # Собираем все распознанные тексты
     texts = []
-    for (bbox, text, confidence) in results:
+    for bbox, text, confidence in results:
         if confidence > 0.3:  # Фильтруем по уверенности
             texts.append(text.strip())
             print(f"EASY_OCR: '{text}' (confidence: {confidence:.2f})")
-    
+
     if not texts:
         print("EASY_OCR: Текст не распознан")
         return None
-    
+
     # Объединяем все распознанные части
-    full_text = ' '.join(texts)
+    full_text = " ".join(texts)
     print(f"EASY_OCR: Объединенный текст: '{full_text}'")
-    
+
     # Очищаем текст - оставляем только цифры, дефисы и двоеточия
-    cleaned_text = re.sub(r'[^\d:-]', '', full_text)
+    cleaned_text = re.sub(r"[^\d:-]", "", full_text)
     print(f"EASY_OCR: Очищенный текст: '{cleaned_text}'")
-    
+
     if not cleaned_text:
         return None
-    
+
     # ГИБКИЙ ПАРСИНГ разных форматов времени
     time_formats = [
-        "%Y-%m-%d %H:%M:%S",    # 2024-01-15 14:30:25
-        "%H:%M:%S",             # 14:30:25
-        "%Y%m%d-%H%M%S",        # 20240115-143025
-        "%Y%m%d%H%M%S",         # 20240115143025
-        "%H%M%S",               # 143025
-        "%Y-%m-%d %H:%M",       # 2024-01-15 14:30
-        "%H:%M",                # 14:30
+        "%Y-%m-%d %H:%M:%S",  # 2024-01-15 14:30:25
+        "%H:%M:%S",  # 14:30:25
+        "%Y%m%d-%H%M%S",  # 20240115-143025
+        "%Y%m%d%H%M%S",  # 20240115143025
+        "%H%M%S",  # 143025
+        "%Y-%m-%d %H:%M",  # 2024-01-15 14:30
+        "%H:%M",  # 14:30
     ]
-    
+
     for fmt in time_formats:
         try:
             # Для форматов с пробелами - добавляем пробелы в очищенный текст
             text_to_parse = cleaned_text
-            if ' ' in fmt:
+            if " " in fmt:
                 # Пытаемся вставить пробелы в нужные места
                 if len(cleaned_text) >= 10:
                     text_to_parse = f"{cleaned_text[:10]} {cleaned_text[10:]}"
-            
+
             dt = datetime.strptime(text_to_parse, fmt)
             dt = dt.replace(tzinfo=timezone.utc)
             print(f"EASY_OCR: УСПЕХ! Распознано время: {dt} (формат: {fmt})")
             return dt
         except ValueError:
             continue
-    
+
     print(f"EASY_OCR: Не удалось распарсить: '{cleaned_text}'")
     return None
+
 
 def build_frame_json(
     timestamp_iso: Optional[str],  # ИСПРАВЛЕНО: | -> Optional
     camera_id: str,
     tick: int,
-    detections: List[Detection],   # ИСПРАВЛЕНО: list -> List
+    detections: List[Detection],  # ИСПРАВЛЕНО: list -> List
     safety_warnings,
     detector: FactoryDetector,
 ) -> dict:
@@ -150,9 +156,7 @@ def build_frame_json(
             "role": None,
             "activity": None,
             "zone": None,
-            "is_in_allowed_zone": (
-                not is_in_danger if det.track_id is not None else None
-            ),
+            "is_in_allowed_zone": (not is_in_danger if det.track_id is not None else None),
             "is_activity_allowed": None,
             "violation_type": "danger_zone" if is_in_danger else None,
             "duration_in_current_activity_sec": None,
@@ -182,6 +186,7 @@ def build_frame_json(
         "events": events,
     }
     return frame_json
+
 
 def run_video(
     input_path: str,
@@ -387,14 +392,8 @@ def run_video(
     print(f"Total unique people: {final_metrics.get('total_unique_people', 0)}")
     print(f"People in danger zones: {final_metrics.get('people_in_danger_zone', 0)}")
     print(f"Total safety violations: {final_metrics.get('total_violations', 0)}")
-    print(
-        "Average track duration: "
-        f"{final_metrics.get('average_track_duration_seconds', 0):.2f}s"
-    )
-    print(
-        "Average time in danger: "
-        f"{final_metrics.get('average_time_in_danger_seconds', 0):.2f}s"
-    )
+    print(f"Average track duration: {final_metrics.get('average_track_duration_seconds', 0):.2f}s")
+    print(f"Average time in danger: {final_metrics.get('average_time_in_danger_seconds', 0):.2f}s")
     print(f"Total frames processed: {final_metrics.get('total_processing_frames', 0)}")
     print(f"Total time (s): {final_metrics.get('current_time_seconds', 0):.2f}")
 
@@ -410,6 +409,7 @@ def run_video(
         writer.release()
     cv2.destroyAllWindows()
     print("Done")
+
 
 def main():
     import argparse
@@ -456,5 +456,7 @@ def main():
         tracking=not args.no_tracking,
     )
 
+
 if __name__ == "__main__":
     main()
+

@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import json
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import cv2
-import json
 import numpy as np
-from datetime import datetime, timedelta
 
-from detection.detector import FactoryDetector, Detection
+from cv.detection.detector import Detection, FactoryDetector
+
+from .motion import MotionBox, MotionDetector
 from .ocr import TimestampOCR
-from .motion import MotionDetector, MotionBox
 
 
 def build_frame_json(
@@ -67,9 +68,7 @@ def build_frame_json(
             "role": None,
             "activity": None,
             "zone": None,
-            "is_in_allowed_zone": (
-                not is_in_danger if det.track_id is not None else None
-            ),
+            "is_in_allowed_zone": (not is_in_danger if det.track_id is not None else None),
             "is_activity_allowed": None,
             "violation_type": "danger_zone" if is_in_danger else None,
             "duration_in_current_activity_sec": None,
@@ -248,11 +247,7 @@ def run_video(
                     foot_point = detector.get_person_foot_point(det.bbox)
                     cv2.circle(frame, foot_point, 5, (255, 255, 0), -1)
 
-                    if (
-                        detector.tracking_enabled
-                        and detector.tracker
-                        and det.track_id is not None
-                    ):
+                    if detector.tracking_enabled and detector.tracker and det.track_id is not None:
                         metrics = detector.tracker.tracks.get(det.track_id)
                         if metrics and metrics.dominant_color:
                             color_rect_size = 20
@@ -315,9 +310,7 @@ def run_video(
     finally:
         if save_metrics:
             final_metrics = detector.get_metrics_summary()
-            metrics_filename = (
-                f"safety_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            )
+            metrics_filename = f"safety_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             with open(metrics_filename, "w", encoding="utf-8") as f:
                 json.dump(final_metrics, f, indent=2, ensure_ascii=False)
         jsonl_file.close()

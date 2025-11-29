@@ -1,21 +1,19 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
-import asyncio
 
 import cv2
-import json
-import numpy as np
-from datetime import datetime, timedelta
 
-from detection.detector import FactoryDetector, Detection
-from .video import build_frame_json
+from cv.detection.detector import FactoryDetector
+
+from .motion import MotionDetector
 from .ocr import TimestampOCR
-from .motion import MotionDetector, MotionBox
-
+from .video import build_frame_json
 
 _DETECTOR: FactoryDetector | None = None
+
 
 def get_detector(device: str = "cuda") -> FactoryDetector:
     global _DETECTOR

@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from typing import List, Tuple, Sequence, Optional, Dict
-import numpy as np
-from ultralytics import YOLO
-import cv2
 import json
 from collections import defaultdict, deque
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Sequence, Tuple
+
+import cv2
+import numpy as np
+from ultralytics import YOLO
 
 
 @dataclass
@@ -53,7 +54,7 @@ class SimpleTracker:
 
     def get_foot_point(self, bbox: Tuple[int, int, int, int]) -> Tuple[int, int]:
         x1, y1, x2, y2 = bbox
-        return ( (x1 + x2) // 2, y2 )
+        return ((x1 + x2) // 2, y2)
 
     def extract_dominant_color(
         self, frame: np.ndarray, bbox: Tuple[int, int, int, int]
@@ -84,7 +85,7 @@ class SimpleTracker:
             return 0.0
 
         diff = np.array(color1, dtype=float) - np.array(color2, dtype=float)
-        distance = float(np.sqrt(np.sum(diff ** 2)))
+        distance = float(np.sqrt(np.sum(diff**2)))
         max_distance = 441.67  # sqrt(3 * 255^2)
         return max(0.0, 1.0 - distance / max_distance)
 
@@ -219,9 +220,7 @@ class FactoryDetector:
         self.target_labels = set(target_labels)
         self.label_to_id = {name: idx for idx, name in self.model.names.items()}
         self.target_ids = [
-            self.label_to_id[label]
-            for label in self.target_labels
-            if label in self.label_to_id
+            self.label_to_id[label] for label in self.target_labels if label in self.label_to_id
         ]
 
         self.tracker: Optional[SimpleTracker] = SimpleTracker() if tracking_enabled else None
@@ -270,11 +269,11 @@ class FactoryDetector:
                     points = zone.get("points")
                     if not points:
                         continue
-                    name = zone.get("name", f"Zone {i+1}")
+                    name = zone.get("name", f"Zone {i + 1}")
                     safe_distance = float(zone.get("safe_distance", 100.0))
                 else:
                     points = zone
-                    name = f"Zone {i+1}"
+                    name = f"Zone {i + 1}"
                     safe_distance = 100.0
 
                 points_tuples = [tuple(map(int, p)) for p in points]
@@ -459,7 +458,11 @@ class FactoryDetector:
             foot_point = self.get_person_foot_point(detection.bbox)
 
             metrics: Optional[PersonMetrics] = None
-            if self.tracking_enabled and self.tracker is not None and detection.track_id is not None:
+            if (
+                self.tracking_enabled
+                and self.tracker is not None
+                and detection.track_id is not None
+            ):
                 metrics = self.tracker.tracks.get(detection.track_id)
 
             min_distance = float("inf")
@@ -572,3 +575,4 @@ class FactoryDetector:
                 (0, 0, 255),
                 1,
             )
+

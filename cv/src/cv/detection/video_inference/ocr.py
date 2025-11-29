@@ -1,8 +1,9 @@
 # ocr.py
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
+
 import cv2
-import re
 from rapidocr_onnxruntime import RapidOCR
 
 TIMESTAMP_ROI = (4, 0, 490, 59)

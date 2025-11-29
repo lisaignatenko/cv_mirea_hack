@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import cv2
 
-from detection.detector import FactoryDetector, Detection
+from cv.detection.detector import Detection, FactoryDetector
 
 
 def run_video(
@@ -70,20 +70,14 @@ def run_video(
                 1,
             )
 
-            if (
-                crops_dir is not None
-                and should_run_detection
-                and det.label == "person"
-            ):
+            if crops_dir is not None and should_run_detection and det.label == "person":
                 crop_x1 = max(0, x1)
                 crop_y1 = max(0, y1)
                 crop_x2 = min(frame.shape[1], x2)
                 crop_y2 = min(frame.shape[0], y2)
                 if crop_x2 > crop_x1 and crop_y2 > crop_y1:
                     crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
-                    crop_name = (
-                        f"frame{frame_idx:06d}_det{det_idx:03d}_{det.label}.jpg"
-                    )
+                    crop_name = f"frame{frame_idx:06d}_det{det_idx:03d}_{det.label}.jpg"
                     cv2.imwrite(str(crops_dir / crop_name), crop)
 
         if writer is not None:
