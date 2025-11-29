@@ -224,3 +224,6 @@ outputs
 
 #YOLO
 yolo11s.pt
+
+data/*
+output_data/*
