@@ -55,8 +55,6 @@ def run_video(
             print(f"Processing frame {frame_idx}")
             detections = detector.detect(frame)
 
-        raw_frame = frame.copy()
-
         for det_idx, det in enumerate(detections):
             x1, y1, x2, y2 = det.bbox
             color = (0, 255, 0) if det.label == "person" else (255, 0, 0)
@@ -82,7 +80,7 @@ def run_video(
                 crop_x2 = min(frame.shape[1], x2)
                 crop_y2 = min(frame.shape[0], y2)
                 if crop_x2 > crop_x1 and crop_y2 > crop_y1:
-                    crop = raw_frame[crop_y1:crop_y2, crop_x1:crop_x2]
+                    crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
                     crop_name = (
                         f"frame{frame_idx:06d}_det{det_idx:03d}_{det.label}.jpg"
                     )

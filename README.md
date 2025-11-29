@@ -15,4 +15,4 @@ python -m detection.video_inference \
   --save-crops crops/persons
 ```
 
-The `--save-crops` option writes each detected person crop (from frames where detection is run) into the specified directory using the pattern `frame<frame>_det<idx>_person.jpg`. Crops are taken from the raw frame without the green detection box to avoid margins. You can then sort these crops into six uniform folders to train your classifier, including multi-colored uniforms.
+The `--save-crops` option writes each detected person crop (from frames where detection is run) into the specified directory using the pattern `frame<frame>_det<idx>_person.jpg`. You can then sort these crops into six uniform folders to train your classifier, including multi-colored uniforms.

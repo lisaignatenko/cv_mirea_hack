@@ -221,3 +221,6 @@ __marimo__/
 #videos
 data/videos/raw/
 outputs
+
+#YOLO
+yolo11s.pt
