@@ -57,17 +57,17 @@ frontend segment endpoint.
 
 ### Inbound (calls to the backend)
 
-Assuming the backend is reachable at `http://localhost:8000`:
+Assuming the backend is reachable at `http://localhost:8001`:
 
 ```bash
 # Start the pipeline (returns 409 if already running)
-curl -X POST http://localhost:8000/segment/start
+curl -X POST http://localhost:8001/segment/start
 
 # Check current status
-curl http://localhost:8000/segment/status
+curl http://localhost:8001/segment/status
 
 # Stop the pipeline
-curl -X POST http://localhost:8000/segment/stop
+curl -X POST http://localhost:8001/segment/stop
 ```
 
 ### Outbound (calls made by the backend)
@@ -77,7 +77,7 @@ frontend. Example for tick `0`:
 
 ```bash
 # Backend -> CV worker
-curl -X POST http://cv:8001/segment \
+curl -X POST http://cv:8000/segment \
   -H 'Content-Type: application/json' \
   -d '{
     "id": 0
