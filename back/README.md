@@ -14,6 +14,9 @@ These variables are required by the backend and migrations service:
 - `FRONTEND_HEALTH_URL`: URL the backend polls to confirm the frontend is healthy.
 - `CV_HEALTH_URL`: URL the backend polls to confirm the CV worker is healthy.
 
+Create the virtual environment with `uv sync --frozen`; the resulting `.venv` directory is
+ignored by Git so CI runners can recreate it without tripping over checked-in placeholders.
+
 ## Docker Compose services
 
 - **db**: Postgres 16 with credentials defined via `POSTGRES_USER`, `POSTGRES_PASSWORD`, and
