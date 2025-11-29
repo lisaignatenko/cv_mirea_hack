@@ -1,9 +1,13 @@
 import asyncio
+import logging
 
 import httpx
 
 from back.data.repositories import SegmentRepository
 from back.domain.models import SegmentPayload
+
+
+logger = logging.getLogger(__name__)
 
 
 class SegmentPipelineService:
@@ -69,12 +73,22 @@ class SegmentPipelineService:
             raise TypeError("CV segment response must be a JSON object")
 
         payload = SegmentPayload.model_validate(response_json)
+        logger.info(
+            "Received CV segment response for id %d:\n%s",
+            self._next_id,
+            payload.model_dump_json(indent=2),
+        )
         await self._repository.record_segment(payload)
 
         await self.forward_to_frontend(payload)
 
     async def forward_to_frontend(self, payload: SegmentPayload) -> None:
         payload_dict = payload.model_dump(mode="json")
+        logger.info(
+            "Forwarding segment payload to frontend for id %d:\n%s",
+            self._next_id,
+            payload.model_dump_json(indent=2),
+        )
         frontend_response = await self._client.post(self._frontend_segment_url, json=payload_dict)
         frontend_response.raise_for_status()
 
