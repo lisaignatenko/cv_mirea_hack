@@ -1,0 +1,29 @@
+name: backend-tests
+
+on:
+  push:
+    paths:
+      - "back/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "back/**"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install uv
+        run: pip install uv
+      - name: Sync dependencies
+        working-directory: back
+        run: uv sync --frozen --group test
+      - name: Run tests
+        working-directory: back
+        run: uv run --group test pytest
