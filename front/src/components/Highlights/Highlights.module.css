@@ -1,0 +1,65 @@
+.section {
+  padding: 36px 0;
+}
+
+.header h2 {
+  margin: 6px 0 8px;
+  font-size: 30px;
+  max-width: 840px;
+}
+
+.sub {
+  color: #9fb3c9;
+  max-width: 720px;
+  line-height: 1.4;
+}
+
+.kicker {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  color: #cfe8ff;
+  margin-bottom: 4px;
+}
+
+.cards {
+  margin-top: 22px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 0;
+  color: #9fb3c9;
+  line-height: 1.4;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7cb7ff, #6ee7c8);
+  margin-bottom: 12px;
+  box-shadow: 0 10px 24px rgba(124, 183, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #041225;
+  font-weight: 700;
+}
