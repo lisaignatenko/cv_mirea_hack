@@ -11,6 +11,7 @@ from pathlib import Path
 import httpx
 import psycopg
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 HTTP_TIMEOUT_SECONDS = 5.0
 RETRY_DELAY_SECONDS = 1.0
@@ -175,9 +176,25 @@ from back.api.routes.resources import router as resources_router  # noqa: E402
 from back.api.routes.segment_pipeline import router as segment_router  # noqa: E402
 
 
+def _cors_origins_from_env() -> list[str]:
+    origins_env = os.getenv("CORS_ALLOW_ORIGINS")
+    if origins_env is None or origins_env.strip() == "":
+        return ["*"]
+    origins = [origin.strip() for origin in origins_env.split(",")]
+    cleaned = [origin for origin in origins if origin]
+    return cleaned or ["*"]
+
+
 def app() -> FastAPI:
     _configure_logging()
     fastapi_app = FastAPI(title="back service", lifespan=_lifespan)
+    fastapi_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins_from_env(),
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     fastapi_app.include_router(health_router)
     fastapi_app.include_router(frontend_router)
