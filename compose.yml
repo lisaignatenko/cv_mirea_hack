@@ -30,6 +30,17 @@ services:
       - migrations_state:/var/run/migrations
     restart: unless-stopped
 
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - back
+      - cv
+    restart: unless-stopped
+
   db:
     image: postgres:16-alpine
     environment:
